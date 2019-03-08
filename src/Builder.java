@@ -3,32 +3,35 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.ArrayList;
 public class Builder{
-    ArrayList<int[]> tokens;
+    TokenHandler tokens;
     BufferedReader reader;
     BufferedWriter writer;
 
-    public Builder(ArrayList<int[]> tokens, BufferedReader reader, BufferedWriter writer){
-        this.tokens = tokens;
+    public Builder(TokenHandler th, BufferedReader reader, BufferedWriter writer){
+        tokens = th;
         this.reader = reader;
         this.writer = writer;
     }
 
     public void build() throws IOException{
-        int position = 0;
         for (int i = 0 ; i < tokens.size() && reader.ready(); i++) {
-            int skip = tokens.get(i)[1] - position;
-            reader.skip(skip);
-            position += skip;
-            if(tokens.get(i)[0] == 0){ //For writing fabricated spaces
-                reader.read(); //Eat up whatever was there
-                writer.write(' ');
-                position++;
-                continue;
+            if(i>0){
+                int endOfLastWord = tokens.pos(i-1) + tokens.length(i-1);
+                int skip = tokens.pos(i)-endOfLastWord;
+                System.out.println("endOfLastWord: " + endOfLastWord);
+                System.out.println("token pos: " + tokens.pos(i));
+                System.out.println("skip: " + skip);
+                reader.skip(skip);
             }
-            for (int j = 0 ; j < tokens.get(i)[2] && reader.ready(); j++, position++) {
-                writer.write((char) reader.read());
-            }
+            writeToken(i);
         }
         writer.flush();
+    }
+
+    private void writeToken(int token) throws IOException{
+        for (int j = 0 ; j < tokens.length(token) && reader.ready(); j++) {
+            char c = (char) reader.read();
+            writer.write((tokens.type(token) == 0) ? ' ' : c); //Just write a space if the token is a space
+        }
     }
 }

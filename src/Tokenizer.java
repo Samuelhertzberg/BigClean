@@ -18,12 +18,13 @@ public class Tokenizer{
     6: Comment
     7: String
     8: Other
+    9: BigComment
     */
-    ArrayList<int[]> fullTokenField = new ArrayList<int[]>();
     int position;
-
-    public Tokenizer(BufferedReader reader){
+    TokenHandler tokens;
+    public Tokenizer(BufferedReader reader, TokenHandler th){
         this.reader = reader;
+        this.tokens = th;
     }
 
     public void tokenize() throws IOException{
@@ -34,23 +35,23 @@ public class Tokenizer{
             c = (char) reader.read();
             int[] token = null;
             if(c == ' '){
-                fullTokenField.add(space());
+                tokens.add(space());
             }else if(c == '\n'){
-                fullTokenField.add(newline());
+                tokens.add(newline());
             }else if(Character.isLetter(c)){
-                fullTokenField.add(word());
+                tokens.add(word());
             }else if(c == '(' || c == ')'){
-                fullTokenField.add(parenthesis());
+                tokens.add(parenthesis());
             }else if(c == '{' || c == '}'){
-                fullTokenField.add(curlyBrackets());
+                tokens.add(curlyBrackets());
             }else if(c == '[' || c == ']'){
-                fullTokenField.add(hardBrackets());
+                tokens.add(hardBrackets());
             }else if(c == '/'){
-                fullTokenField.add(comment());
+                tokens.add(comment());
             }else if((c == '\"' || c == '\'') && last != '\\'){
-                fullTokenField.add(string(c));
+                tokens.add(string(c));
             }else{
-                fullTokenField.add(other());
+                tokens.add(other());
             }
             position++;
             last = c;
@@ -100,17 +101,29 @@ public class Tokenizer{
     }
 
     private int[] comment() throws IOException{
-        char c = 'x';
-        int[] token = {6,position,1}; //Length is 1 since we already read one char.
+        System.out.println("COMMENT");
+        char c1 = 'x';
+        char c2 = 'x';
+        c1 = (char) reader.read();
+        boolean inlineComment = (c1 == '/'); //A second '/' means inline, else big comment
+        int[] token = {(inlineComment ? 6 : 9),position,2}; //Length is 2 since we already read two char.
+        position++;
         while (reader.ready()) {
-            reader.mark(1);
-            c = (char) reader.read();
-            if(c == '\n'){//End of comment
+            if(inlineComment)
+                reader.mark(1);
+            c1 = (char) reader.read();
+            if(inlineComment && c1 == '\n'){//End of comment
                 reader.reset();
+                return token;
+            }
+            if(!inlineComment && c1 == '/' && c2 == '*'){//End of comment
+                position++;
+                token[2]++;
                 return token;
             }
             position++;
             token[2]++;
+            c2 = c1;
         }
         return token;
     }
@@ -133,43 +146,5 @@ public class Tokenizer{
     private int[] other(){
         int[] token = {8,position,1};
         return token;
-    }
-
-    @Override
-    public String toString(){
-        String retur = "";
-        for (int[] t : fullTokenField) {
-            switch (t[0]) {
-                case 0: retur += "<SPACE>";
-                    break;
-                case 1: retur += "<NEWLINE>";
-                    break;
-                case 2: retur += "<WORD>";
-                    break;
-                case 3: retur += "<PAR>";
-                    break;
-                case 4: retur += "<CUR>";
-                    break;
-                case 5: retur += "<BRA>";
-                    break;
-                case 6: retur += "<COMMENT>";
-                    break;
-                case 7: retur += "<STRING>";
-                    break;
-                case 8: retur += "<OTHER>";
-                    break;
-            }
-        }
-        return retur;
-    }
-
-    public ArrayList<int[]> getTokens(){
-        return fullTokenField;
-    }
-
-    public void fullPrint(){
-        for (int[] t: fullTokenField) {
-            System.out.println(t[0] + ", " + t[1] + ", " + t[2]);
-        }
     }
 }

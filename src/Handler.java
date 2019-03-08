@@ -10,15 +10,19 @@ public class Handler{
     public Handler(File file){
         this.file = file;
         try {
+            TokenHandler th = new TokenHandler();
             BufferedReader reader = new BufferedReader(new FileReader(file));
-            Tokenizer tokenizer = new Tokenizer(reader);
+            Tokenizer tokenizer = new Tokenizer(reader, th);
             tokenizer.tokenize();
-            Filter filter = new Filter(tokenizer.getTokens());
+            Filter filter = new Filter(th);
+            System.out.println(th);
             filter.filterTokens();
+            System.out.println(th);
+            th.fullPrint();
             File compact = makeCompactFile(file, "Compact");
             reader = new BufferedReader(new FileReader(file)); //Re-instantiate to reset
             BufferedWriter writer = new BufferedWriter(new FileWriter(compact));
-            Builder builder = new Builder(filter.getTokens(), reader, writer);
+            Builder builder = new Builder(th, reader, writer);
             builder.build();
         }catch (IOException e) {
             System.out.println("Could not construct FileReader");
