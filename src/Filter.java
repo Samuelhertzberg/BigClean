@@ -6,27 +6,33 @@ public class Filter{
     }
 
     public void filterTokens(){
+        System.out.println("Filtering:");
         trimSpaces();
         filterStackedSpaces();
-        filterUneccessarySpaces();
+        filterUnnecessarySpaces();
     }
 
-    public void filterUneccessarySpaces(){
+    public void filterUnnecessarySpaces(){
+        System.out.print("Filtering unnecessary spaces: ");
         for (int i = 0 ; i < tokens.size() - 2 ;) {
             int[] last = tokens.get(i);
             int[] middle = tokens.get(i+1);
             int[] head = tokens.get(i+2);
-            if(isWhitespace(middle)){
+            if(isWhitespace(middle)){ //Removal of spaces
                 if(!(isWordLike(last) && isWordLike(head))){ //They are not both words
                     tokens.remove(i+1);
                     continue;
+                }else{ //They are both words
+                    tokens.get(i+1)[0] = 0; //Shuld always just be a space
                 }
             }
             i++;
         }
+        System.out.println("Done.");
     }
 
     public void filterStackedSpaces(){
+        System.out.print("Filtering stacked spaces: ");
         int[] token1;
         int[] token2;
         for (int i = 0 ; i <tokens.size() ; i++) {
@@ -40,9 +46,11 @@ public class Filter{
                     tokens.remove(i+1);
             }
         }
+        System.out.println("Done.");
     }
 
     public void trimSpaces(){
+        System.out.print("Trimming initial and trailing spaces: ");
         while(tokens.size() > 0 && isSpace(0)) //Initial spaces
             tokens.remove(0);
         while(tokens.size() > 0){ //Trailing whitespaces
@@ -53,6 +61,7 @@ public class Filter{
                 break;
             }
         }
+        System.out.println("Done.");
     }
 
     public ArrayList<int[]> getTokens(){

@@ -27,6 +27,7 @@ public class Tokenizer{
     }
 
     public void tokenize() throws IOException{
+        System.out.print("Tokenzing:");
         char c;
         char last = 'x';
         while(reader.ready()){
@@ -54,6 +55,7 @@ public class Tokenizer{
             position++;
             last = c;
         }
+        System.out.println(" Done.");
     }
 
     private int[] space(){

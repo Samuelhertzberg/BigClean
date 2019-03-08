@@ -15,13 +15,13 @@ public class Handler{
             tokenizer.tokenize();
             Filter filter = new Filter(tokenizer.getTokens());
             filter.filterTokens();
-
             File compact = makeCompactFile(file, "Compact");
+            reader = new BufferedReader(new FileReader(file)); //Re-instantiate to reset
             BufferedWriter writer = new BufferedWriter(new FileWriter(compact));
             Builder builder = new Builder(filter.getTokens(), reader, writer);
             builder.build();
         }catch (IOException e) {
-            System.out.println("Could not construct filereader");
+            System.out.println("Could not construct FileReader");
         }
     }
 
